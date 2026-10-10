@@ -1,0 +1,8 @@
+{
+  "name": "mtg-onepager",
+  "version": "1.0.0",
+  "description": "議事録を「決定／未決／進捗／予定」の16:9ペライチ画像（JPEG 3840×2160）にする",
+  "author": { "name": "vhsvhafmwf" },
+  "license": "MIT",
+  "keywords": ["meeting", "minutes", "議事録", "onepager", "playwright"]
+}

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>MTG onepager</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  /* デザイン言語: キャンバス / 墨 / 白 / アクセント1色（グラデ・グロー禁止）。
+     状態 = 決定は白カード＋塗りチェック、未決は部署色カード＋中抜きチェック。部署 = data.teams[*].color（ビビッド）。 */
+  :root{
+    --canvas:#E9E7E2; --panel:#DEDBD5; --ink:#0B0B0B; --body:#2b2a27; --mute:#77736C; --acc:#FF5A1F;
+    --fit:1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow:hidden}
+  body{width:1920px;height:1080px;background:var(--canvas);color:var(--ink);
+    font-family:Inter,"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo","Noto Sans CJK JP",sans-serif;font-size:16px;line-height:1.5;
+    display:flex;flex-direction:column;padding:44px 60px 26px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+  /* 部署ごとの色: --v(キー) から地色と文字色を合成 */
+  [data-k]{--tint:color-mix(in srgb,var(--v) 13%,#fff);--deep:color-mix(in srgb,var(--v) 78%,#000)}
+
+  .head{display:flex;align-items:flex-end;gap:24px}
+  .eyebrow{font-size:13px;color:var(--mute);letter-spacing:.04em}
+  h1{font-size:52px;font-weight:800;letter-spacing:-.025em;line-height:1.1;margin-top:6px}
+  .when{font-size:16px;color:var(--mute);margin-top:6px}
+  .island{margin-left:auto;background:#fff;border-radius:999px;padding:14px 26px 14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+  .island .pulse{width:12px;height:12px;border-radius:50%;background:var(--acc)}
+  .island .k{font-size:12px;color:var(--mute);letter-spacing:.12em}
+  .island .d{font-size:22px;font-weight:700;line-height:1.1}
+  .island .t{font-size:15px;color:var(--body)}
+
+  .legend{display:flex;align-items:center;gap:8px;margin:22px 0 20px;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid #c9c5bd;border-radius:999px;padding:5px 14px 5px 10px;font-size:13.5px}
+  .pill.lbl{border:none;padding-left:0;color:var(--mute);font-size:12px;letter-spacing:.1em}
+  .pill .sq{width:18px;height:14px;border-radius:4px;background:var(--v)}
+  .gap{width:14px}
+
+  .cb{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;margin-top:2px}
+  .cb.done{background:var(--acc)}
+  .cb.done::after{content:"";width:8px;height:4.5px;border-left:2.2px solid #fff;border-bottom:2.2px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+  .cb.open{border:2px solid var(--acc)}
+
+  .board{flex:1;display:grid;grid-template-columns:1fr 1.05fr 1.3fr;gap:20px;min-height:0;zoom:var(--fit)}
+  .col{background:var(--panel);border-radius:22px;padding:18px 16px 16px;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  .colh{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;margin:0 4px 14px}
+  .colh.sub{margin-top:12px}
+  .badge{min-width:24px;height:24px;border-radius:12px;background:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
+  .badge.acc{background:var(--acc);color:#fff}
+  .empty{font-size:14px;color:var(--mute);margin:0 4px 10px}
+
+  .card{border-radius:14px;padding:12px 16px 12px 20px;margin-bottom:10px}
+  .card .row{display:flex;gap:11px;align-items:flex-start}
+  .card .tag{font-size:12px;font-weight:600;letter-spacing:.02em;margin-bottom:2px;color:var(--deep)}
+  .card .q{font-size:16.5px;font-weight:700;line-height:1.4}
+  .card .a{font-size:15px;line-height:1.5;margin-top:2px;color:var(--body)}
+  .card.done{background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.06)}
+  .card.done .a{color:#4a4741}
+  .card.done .kd{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:var(--v)}
+  .card.open{background:var(--tint);box-shadow:inset 5px 0 0 var(--v)}
+  .card.open.compact{padding:10px 16px 10px 20px}
+
+  .prog{border-radius:14px;padding:12px 18px 6px 22px;margin-bottom:12px;background:var(--tint);box-shadow:inset 5px 0 0 var(--v)}
+  .prog h3{font-size:17px;font-weight:800;margin-bottom:4px;color:var(--deep)}
+  .pi{display:grid;grid-template-columns:178px 1fr;gap:14px;padding:8px 0;border-top:1px solid rgba(0,0,0,.08)}
+  .pi:first-of-type{border-top:none}
+  .pi .h{font-size:16.5px;font-weight:800;line-height:1.45}
+  .pi .t{font-size:17px;line-height:1.5;color:var(--body)}
+
+  .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ev{border-radius:14px;padding:11px 16px 11px 20px;background:var(--tint);box-shadow:inset 5px 0 0 var(--v)}
+  .ev .d{font-size:24px;font-weight:700;line-height:1.15}
+  .ev .d small{font-size:13px;color:var(--mute);margin-left:4px;font-weight:600}
+  .ev .t{font-size:14.5px;color:var(--body)}
+  .ev.now{background:#fff;box-shadow:inset 5px 0 0 var(--acc)}
+  .ev.now .d{color:var(--acc)}
+
+  footer{display:flex;justify-content:space-between;gap:24px;font-size:12px;color:var(--mute);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="head">
+  <div>
+    <div class="eyebrow mono" id="org"></div>
+    <h1 id="title"></h1>
+    <div class="when" id="when"></div>
+  </div>
+  <div class="island" id="island"><span class="pulse"></span><div><div class="k mono">NEXT</div><div class="d" id="nd"></div></div><div class="t" id="nt"></div></div>
+</div>
+
+<div class="legend">
+  <span class="pill lbl mono">STATUS</span>
+  <span class="pill"><span class="cb done" style="margin:0"></span>決定（白いカード）</span>
+  <span class="pill"><span class="cb open" style="margin:0"></span><span id="lgOpen"></span></span>
+  <span class="gap"></span>
+  <span class="pill lbl mono">TEAM</span>
+  <span id="lgK" style="display:contents"></span>
+</div>
+
+<div class="board">
+  <div class="col"><div class="colh">決定事項 <span class="badge" id="c1"></span></div><div id="dec"></div>
+    <div class="colh sub" id="schH">直近の予定</div><div id="sch" class="sgrid"></div></div>
+  <div class="col"><div class="colh">未決・返事待ち <span class="badge acc" id="c2"></span></div><div id="opn"></div></div>
+  <div class="col"><div class="colh"><span id="progH"></span></div><div id="prog"></div></div>
+</div>
+<footer><span id="src"></span><span id="note"></span></footer>
+
+<script>window.MTG = /*__DATA__*/null;</script>
+<script>
+(() => {
+  const M = window.MTG, K = M.teams, $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const kv = k => `data-k="${esc(k)}" style="--v:${esc(K[k].color)}"`;
+  const name = k => esc(K[k].name);
+  const empty = msg => `<div class="empty">${msg}</div>`;
+
+  const unit = M.unit || '部署';
+  $('lgOpen').textContent = `未決（${unit}の色のカード）`;
+  $('progH').textContent = `各${unit}の進捗`;
+  $('org').textContent = M.org + ' / ' + (M.kind || '会議キャッチアップ');
+  $('title').textContent = M.title + ' まとめ';
+  $('when').textContent = [M.date, M.place].filter(Boolean).join(' ・ ');
+  $('src').textContent = M.source ? '出典：' + M.source : '';
+  $('note').textContent = M.note ? '※ ' + M.note : '';
+
+  const done = M.decisions.filter(d => d.status === 'done');
+  const open = M.decisions.filter(d => d.status === 'open');
+  $('c1').textContent = done.length;
+  $('c2').textContent = open.length + M.pending.length;
+
+  const nx = M.schedule.find(s => s.now) || M.schedule[0];
+  if (nx) { $('nd').textContent = nx.date + (nx.dow ? ' ' + nx.dow : ''); $('nt').textContent = nx.text; }
+  else $('island').style.visibility = 'hidden';
+
+  $('lgK').innerHTML = Object.keys(K).map(k => `<span class="pill" ${kv(k)}><span class="sq"></span>${name(k)}</span>`).join('');
+
+  $('dec').innerHTML = done.length ? done.map(d => `<div class="card done" ${kv(d.team)}><div class="row"><span class="cb done"></span><div><div class="tag"><span class="kd"></span>${name(d.team)}</div><div class="q">${esc(d.q)}</div><div class="a">${esc(d.a)}</div></div></div></div>`).join('') : empty('この会議で確定した事項はありません');
+
+  const oc = (k, label, q, a, cls = '') => `<div class="card open ${cls}" ${kv(k)}><div class="row"><span class="cb open"></span><div><div class="tag">${esc(label)}</div>${q ? `<div class="q">${esc(q)}</div>` : ''}<div class="a">${esc(a)}</div></div></div></div>`;
+  const opnHtml = open.map(d => oc(d.team, K[d.team].name + ' ・ 議論', d.q, d.a)).join('')
+    + M.pending.map(p => oc(p.team, (p.from ? p.from + ' → ' : '') + p.to, '', p.text, 'compact')).join('');
+  $('opn').innerHTML = opnHtml || empty('未決・返事待ちはありません');
+
+  $('prog').innerHTML = M.progress.map(p => `<div class="prog" ${kv(p.team)}><h3>${name(p.team)}</h3>${p.items.map(x => `<div class="pi"><div class="h">${esc(x.h)}</div><div class="t">${esc(x.t)}</div></div>`).join('')}</div>`).join('') || empty('進捗報告はありません');
+
+  if (M.schedule.length) $('sch').innerHTML = M.schedule.map(s => `<div class="ev ${s.now ? 'now' : ''}" ${kv(s.team)}><div class="d mono">${esc(s.date)}${s.dow ? `<small>${esc(s.dow)}</small>` : ''}</div><div class="t">${esc(s.text)}</div></div>`).join('');
+  else { $('schH').remove(); $('sch').remove(); }
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body>
+</html>

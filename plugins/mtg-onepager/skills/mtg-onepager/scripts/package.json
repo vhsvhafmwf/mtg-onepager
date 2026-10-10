@@ -1,0 +1,14 @@
+{
+  "name": "mtg-onepager-render",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "議事録データ(JSON)をペライチ JPEG に書き出す。",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.62.1"
+  }
+}

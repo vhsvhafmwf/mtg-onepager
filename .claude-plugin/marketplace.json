@@ -1,0 +1,17 @@
+{
+  "name": "mtg-onepager",
+  "owner": { "name": "vhsvhafmwf" },
+  "metadata": {
+    "description": "議事録を「決定／未決／進捗／予定」の16:9ペライチ画像にする Claude Code スキル",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "mtg-onepager",
+      "description": "議事録を「決定／未決／進捗／予定」の16:9ペライチ画像（JPEG 3840×2160）にする",
+      "version": "1.0.0",
+      "author": { "name": "vhsvhafmwf" },
+      "source": "./plugins/mtg-onepager"
+    }
+  ]
+}
